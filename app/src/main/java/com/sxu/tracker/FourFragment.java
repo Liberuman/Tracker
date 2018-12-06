@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.sxu.trackerlibrary.LifecycleFragment;
+import com.sxu.trackerlibrary.listener.LifecycleFragment;
 
 
 /**

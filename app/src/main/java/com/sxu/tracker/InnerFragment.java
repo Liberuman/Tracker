@@ -10,10 +10,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import com.sxu.trackerlibrary.LifecycleFragment;
-import com.sxu.trackerlibrary.bean.Event;
+import com.sxu.trackerlibrary.listener.LifecycleFragment;
+import com.sxu.trackerlibrary.bean.EventBean;
 
 
 /**
@@ -88,8 +87,8 @@ public class InnerFragment extends LifecycleFragment {
 			@Override
 			public void onClick(View view) {
 				Log.i("out", "fragment点击了");
-				String viewPath = Event.generateViewPath(getActivity(), null);
-				String clickedPath = Event.generateClickedPath(view, null);
+				String viewPath = EventBean.generateViewPath(getActivity(), null);
+				String clickedPath = EventBean.generateClickedPath(view, null);
 				Log.i("out", "path===fragment view===" + viewPath + " clicked=" + clickedPath);
 			}
 		});

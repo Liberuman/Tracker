@@ -1,5 +1,8 @@
 package com.sxu.trackerlibrary.bean;
 
+import com.sxu.trackerlibrary.TrackerConfiguration;
+import com.sxu.trackerlibrary.http.BaseProtocolBean;
+
 import java.util.List;
 
 /*******************************************************************************
@@ -15,6 +18,6 @@ public class ConfigBean extends BaseProtocolBean<ConfigBean.DataBean> {
 
 	public static class DataBean {
 		public TrackerConfiguration baseConfig;
-		public List<Event> validEventList;
+		public List<EventBean> validEventList;
 	}
 }

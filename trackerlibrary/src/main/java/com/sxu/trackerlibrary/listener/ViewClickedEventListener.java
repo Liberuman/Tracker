@@ -1,22 +1,17 @@
-package com.sxu.trackerlibrary;
+package com.sxu.trackerlibrary.listener;
 
 import android.app.Activity;
-import android.content.Context;
-import android.os.Build;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 
-import java.util.List;
+import com.sxu.trackerlibrary.Tracker;
 
 /*******************************************************************************
  * Description: 监听View的点击事件
@@ -27,16 +22,16 @@ import java.util.List;
  *
  * Copyright: all rights reserved by Freeman.
  *******************************************************************************/
-public class ViewClickedEventTracker extends View.AccessibilityDelegate {
+public class ViewClickedEventListener extends View.AccessibilityDelegate {
 
 	private final int FRAGMENT_TAG_KEY = 0xffff0001;
 
-	private ViewClickedEventTracker() {
+	private ViewClickedEventListener() {
 
 	}
 
-	public static ViewClickedEventTracker getInstance() {
-		return ViewClickedEventTracker.Singleton.instance;
+	public static ViewClickedEventListener getInstance() {
+		return ViewClickedEventListener.Singleton.instance;
 	}
 
 	/**
@@ -98,7 +93,7 @@ public class ViewClickedEventTracker extends View.AccessibilityDelegate {
 			if (fragment != null) {
 				view.setTag(FRAGMENT_TAG_KEY, fragment);
 			}
-			view.setAccessibilityDelegate(ViewClickedEventTracker.this);
+			view.setAccessibilityDelegate(ViewClickedEventListener.this);
 		}
 		if (view instanceof ViewGroup) {
 			int childCount = ((ViewGroup) view).getChildCount();
@@ -120,11 +115,11 @@ public class ViewClickedEventTracker extends View.AccessibilityDelegate {
 	public void sendAccessibilityEvent(View host, int eventType) {
 		super.sendAccessibilityEvent(host, eventType);
 		if (AccessibilityEvent.TYPE_VIEW_CLICKED == eventType && host != null) {
-			EventManager.getInstance().addClickEvent(host, (Fragment) host.getTag(FRAGMENT_TAG_KEY));
+			Tracker.getInstance().addClickEvent(host, (Fragment) host.getTag(FRAGMENT_TAG_KEY));
 		}
 	}
 
 	private static class Singleton {
-		private final static ViewClickedEventTracker instance = new ViewClickedEventTracker();
+		private final static ViewClickedEventListener instance = new ViewClickedEventListener();
 	}
 }

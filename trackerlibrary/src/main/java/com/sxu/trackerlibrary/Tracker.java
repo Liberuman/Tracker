@@ -1,22 +1,23 @@
 package com.sxu.trackerlibrary;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.View;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.sxu.trackerlibrary.bean.BaseBean;
-import com.sxu.trackerlibrary.bean.BaseProtocolBean;
+import com.sxu.trackerlibrary.http.BaseBean;
+import com.sxu.trackerlibrary.http.BaseProtocolBean;
 import com.sxu.trackerlibrary.bean.ConfigBean;
-import com.sxu.trackerlibrary.bean.Constants;
-import com.sxu.trackerlibrary.bean.Event;
-import com.sxu.trackerlibrary.bean.TrackerConfiguration;
+import com.sxu.trackerlibrary.http.Constants;
+import com.sxu.trackerlibrary.bean.EventBean;
 import com.sxu.trackerlibrary.db.DatabaseManager;
+import com.sxu.trackerlibrary.http.UploadEventService;
+import com.sxu.trackerlibrary.listener.ActivityLifecycleListener;
 import com.sxu.trackerlibrary.message.EventInfo;
-import com.sxu.trackerlibrary.util.HttpManager;
+import com.sxu.trackerlibrary.http.HttpManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.List;
  *
  * Copyright: all rights reserved by Freeman.
  *******************************************************************************/
-public class EventManager {
+public class Tracker {
 
 	private boolean requestConfig = false;
 	private long lastItemEventTime = 0;
@@ -41,11 +42,11 @@ public class EventManager {
 	/**
 	 * 保存产生的事件
 	 */
-	private List<Event> eventList = new ArrayList<>();
+	private List<EventBean> eventList = new ArrayList<>();
 
 	private Context context;
 	private TrackerConfiguration config;
-	private static EventManager instance;
+	private static Tracker instance;
 
 	private final int UPLOAD_EVENT_WHAT = 0xff01;
 	private final int MAX_EVENT_COUNT = 50;
@@ -64,15 +65,15 @@ public class EventManager {
 		}
 	};
 
-	private EventManager() {
+	private Tracker() {
 
 	}
 
-	public static EventManager getInstance() {
+	public static Tracker getInstance() {
 		if (instance == null) {
-			synchronized (EventManager.class) {
+			synchronized (Tracker.class) {
 				if (instance == null) {
-					instance = new EventManager();
+					instance = new Tracker();
 				}
 			}
 		}
@@ -80,13 +81,14 @@ public class EventManager {
 		return instance;
 	}
 
-	public void init(Context context, TrackerConfiguration config) {
+	public void init(Application context, TrackerConfiguration config) {
 		if (config == null) {
 			throw new IllegalArgumentException("config can't be null");
 		}
 
+		this.context = context;
 		setTrackerConfig(config);
-		this.context = context.getApplicationContext();
+		context.registerActivityLifecycleCallbacks(new ActivityLifecycleListener());
 		if (config.getUploadCategory() == Constants.UPLOAD_CATEGORY.REAL_TIME) {
 			UploadEventService.enter(context, config.getHostName(), config.getHostPort(), null);
 		} else {
@@ -131,10 +133,10 @@ public class EventManager {
 	 * @param validEventList
 	 * @return
 	 */
-	private List<String> getValidEventList(List<Event> validEventList) {
+	private List<String> getValidEventList(List<EventBean> validEventList) {
 		List<String> validEventPathList = new ArrayList<>();
 		if (validEventList != null && validEventList.size() > 0) {
-			for (Event event : validEventList) {
+			for (EventBean event : validEventList) {
 				validEventPathList.add(event.getPath());
 			}
 		}
@@ -149,7 +151,7 @@ public class EventManager {
 	 * @param duration
 	 */
 	public void addViewEvent(Context context, Fragment fragment, long duration) {
-		addEvent(new Event(Event.generateViewPath(context, fragment), duration));
+		addEvent(new EventBean(EventBean.generateViewPath(context, fragment), duration));
 	}
 
 	/**
@@ -158,10 +160,10 @@ public class EventManager {
 	 * @param fragment
 	 */
 	public void addClickEvent(View view, Fragment fragment) {
-		addEvent(new Event(Event.generateClickedPath(view, fragment)));
+		addEvent(new EventBean(EventBean.generateClickedPath(view, fragment)));
 	}
 
-	private void addEvent(final Event eventInfo) {
+	private void addEvent(final EventBean eventInfo) {
 		if (config.getUploadCategory() == Constants.UPLOAD_CATEGORY.REAL_TIME) {
 			commitRealTimeEvent(eventInfo);
 		} else {
@@ -182,7 +184,7 @@ public class EventManager {
 	 * 通过后台服务实时上传埋点数据
 	 * @param eventInfo
 	 */
-	private void commitRealTimeEvent(Event eventInfo) {
+	private void commitRealTimeEvent(EventBean eventInfo) {
 		UploadEventService.enter(context, eventInfo);
 	}
 
@@ -190,20 +192,20 @@ public class EventManager {
 	 * 上传埋点数据
 	 */
 	private synchronized void uploadEventInfo() {
-		List<Event> appendCommitEventList = DatabaseManager.getInstance(context.getApplicationContext()).getAllData();
+		List<EventBean> appendCommitEventList = DatabaseManager.getInstance(context.getApplicationContext()).getAllData();
 		if (appendCommitEventList != null && appendCommitEventList.size() > 0) {
 			lastItemEventTime = appendCommitEventList.get(appendCommitEventList.size() - 1).getEventTime();
 			realUploadEventInfo(getByteData(appendCommitEventList));
 		}
 	}
 
-	private byte[] convertDataToJson(List<Event> eventList) {
-		return BaseBean.toJson(eventList, new TypeToken<List<Event>>(){}.getType()).getBytes();
+	private byte[] convertDataToJson(List<EventBean> eventList) {
+		return BaseBean.toJson(eventList, new TypeToken<List<EventBean>>(){}.getType()).getBytes();
 	}
 
-	private byte[] convertDataToProtocolBuffer(List<Event> eventList) {
+	private byte[] convertDataToProtocolBuffer(List<EventBean> eventList) {
 		EventInfo.EventList.Builder builder = EventInfo.EventList.newBuilder();
-		for (Event event : eventList) {
+		for (EventBean event : eventList) {
 			builder.addEvents(EventInfo
 					.Event.newBuilder()
 					.setPath(event.getPath())
@@ -215,7 +217,7 @@ public class EventManager {
 		return builder.build().toByteArray();
 	}
 
-	private byte[] getByteData(List<Event> eventList) {
+	private byte[] getByteData(List<EventBean> eventList) {
 		return config.getDataProtocol() == Constants.DATA_PROTOCOL.JSON ? convertDataToJson(eventList)
 				: convertDataToProtocolBuffer(eventList);
 	}

@@ -3,6 +3,7 @@ package com.sxu.tracker;
 import android.app.Application;
 
 import com.sxu.trackerlibrary.Tracker;
+import com.sxu.trackerlibrary.TrackerConfiguration;
 
 /*******************************************************************************
  * Description: 
@@ -18,6 +19,7 @@ public class MyApp extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Tracker.getInstance().init(this);
+		TrackerConfiguration configuration = new TrackerConfiguration();
+		Tracker.getInstance().init(this, configuration);
 	}
 }

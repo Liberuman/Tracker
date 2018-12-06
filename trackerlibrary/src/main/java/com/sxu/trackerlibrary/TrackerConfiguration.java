@@ -1,5 +1,6 @@
-package com.sxu.trackerlibrary.bean;
+package com.sxu.trackerlibrary;
 
+import com.sxu.trackerlibrary.http.Constants;
 import com.sxu.trackerlibrary.util.LogUtil;
 
 import java.net.URL;

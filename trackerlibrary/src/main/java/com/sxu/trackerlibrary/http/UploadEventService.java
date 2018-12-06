@@ -1,4 +1,4 @@
-package com.sxu.trackerlibrary;
+package com.sxu.trackerlibrary.http;
 
 import android.app.Service;
 import android.content.Context;
@@ -6,13 +6,11 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.sxu.trackerlibrary.bean.Event;
-import com.sxu.trackerlibrary.message.EventInfo;
+import com.sxu.trackerlibrary.bean.EventBean;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketAddress;
 
 /*******************************************************************************
@@ -52,7 +50,7 @@ public class UploadEventService extends Service {
 		}
 
 		if (socket != null) {
-			Event eventInfo = (Event) intent.getSerializableExtra(EXTRA_KEY_EVENT_INFO);
+			EventBean eventInfo = (EventBean) intent.getSerializableExtra(EXTRA_KEY_EVENT_INFO);
 			if (eventInfo != null) {
 				try {
 					byte[] data = eventInfo.toJson().getBytes("UTF-8");
@@ -68,14 +66,14 @@ public class UploadEventService extends Service {
 		return super.onStartCommand(intent, flags, startId);
 	}
 
-	public static void enter(Context context, Event eventInfo) {
+	public static void enter(Context context, EventBean eventInfo) {
 		Intent intent = new Intent(context, UploadEventService.class);
 		intent.putExtra(EXTRA_KEY_EVENT_INFO, eventInfo);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startService(intent);
 	}
 
-	public static void enter(Context context, String hostName, int hostPort, Event eventInfo) {
+	public static void enter(Context context, String hostName, int hostPort, EventBean eventInfo) {
 		Intent intent = new Intent(context, UploadEventService.class);
 		intent.putExtra(EXTRA_KEY_HOST_NAME, hostName);
 		intent.putExtra(EXTRA_KEY_HOST_PORT, hostPort);

@@ -1,4 +1,4 @@
-package com.sxu.trackerlibrary.bean;
+package com.sxu.trackerlibrary.http;
 
 import com.google.gson.Gson;
 

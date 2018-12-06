@@ -1,17 +1,13 @@
-package com.sxu.trackerlibrary;
+package com.sxu.trackerlibrary.listener;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
-import android.view.View;
 
-import com.sxu.trackerlibrary.util.LogUtil;
+import com.sxu.trackerlibrary.Tracker;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -67,7 +63,7 @@ public class FragmentLifecycleListener extends FragmentManager.FragmentLifecycle
 		super.onFragmentDetached(fm, f);
 		long duration = durationMap.get(f);
 		if (duration > 0) {
-			EventManager.getInstance().addViewEvent(f.getActivity(), f, duration);
+			Tracker.getInstance().addViewEvent(f.getActivity(), f, duration);
 		}
 		resumeTimeMap.remove(f);
 		durationMap.remove(f);
@@ -81,7 +77,7 @@ public class FragmentLifecycleListener extends FragmentManager.FragmentLifecycle
 		if (visible) {
 			resumeTimeMap.put(f, System.currentTimeMillis());
 			if (!eventTrackerMap.get(f)) {
-				ViewClickedEventTracker.getInstance().setFragmentTracker(f);
+				ViewClickedEventListener.getInstance().setFragmentTracker(f);
 				eventTrackerMap.put(f, true);
 			}
 		} else {

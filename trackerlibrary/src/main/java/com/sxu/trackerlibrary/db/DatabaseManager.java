@@ -5,8 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.sxu.trackerlibrary.ThreadPoolManager;
-import com.sxu.trackerlibrary.bean.Event;
+import com.sxu.trackerlibrary.http.ThreadPoolManager;
+import com.sxu.trackerlibrary.bean.EventBean;
 import com.sxu.trackerlibrary.util.LogUtil;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class DatabaseManager {
 	 * 将事件暂存在数据库
 	 * @param eventInfo
 	 */
-	public void insertData(Event eventInfo) {
+	public void insertData(EventBean eventInfo) {
 		addTask.updateData(eventInfo);
 		ThreadPoolManager.executeTask(addTask);
 	}
@@ -58,8 +58,8 @@ public class DatabaseManager {
 	/**
 	 * 将事件暂存在数据库
 	 */
-	public List<Event> getAllData() {
-		List<Event> eventList = null;
+	public List<EventBean> getAllData() {
+		List<EventBean> eventList = null;
 		Cursor cursor = database.query(DEFAULT_TABLE_NAME, null, null, null,
 				null, null, null);
 		if (cursor != null) {
@@ -69,10 +69,10 @@ public class DatabaseManager {
 				int type = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.COLUMN_KEY_TYPE));
 				long duration = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.COLUMN_KEY_DURATION));
 				long eventTime = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.COLUMN_KEY_EVENT_TIME));
-				if (type == Event.EVENT_TYPE_VIEW) {
-					eventList.add(new Event(path, duration, eventTime));
+				if (type == EventBean.EVENT_TYPE_VIEW) {
+					eventList.add(new EventBean(path, duration, eventTime));
 				} else if (type == 2) {
-					eventList.add(new Event(eventTime, path));
+					eventList.add(new EventBean(eventTime, path));
 				} else {
 					/**
 					 * Nothing
@@ -100,9 +100,9 @@ public class DatabaseManager {
 
 	private class AddEventToDBTask implements Runnable {
 
-		private Event eventInfo;
+		private EventBean eventInfo;
 
-		public void updateData(Event eventInfo) {
+		public void updateData(EventBean eventInfo) {
 			this.eventInfo = eventInfo;
 		}
 

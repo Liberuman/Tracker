@@ -1,19 +1,12 @@
 package com.sxu.tracker;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
-import com.sxu.trackerlibrary.bean.Event;
-import com.sxu.trackerlibrary.util.HttpManager;
-
-import java.util.List;
+import com.sxu.trackerlibrary.bean.EventBean;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,8 +18,8 @@ public class MainActivity extends AppCompatActivity {
 		findViewById(R.id.normal_text).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				String viewPath = Event.generateViewPath(MainActivity.this, null);
-				String clickedPath = Event.generateClickedPath(view, null);
+				String viewPath = EventBean.generateViewPath(MainActivity.this, null);
+				String clickedPath = EventBean.generateClickedPath(view, null);
 				Log.i("out", "path===view===" + viewPath + " clicked=" + clickedPath);
 				LifecycleActivity.enter(MainActivity.this, LifecycleActivity.STYLE_NORMAL);
 

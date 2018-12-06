@@ -1,13 +1,7 @@
-package com.sxu.trackerlibrary.util;
+package com.sxu.trackerlibrary.http;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
-
-import com.google.gson.Gson;
-import com.sxu.trackerlibrary.ThreadPoolManager;
-import com.sxu.trackerlibrary.bean.BaseBean;
-import com.sxu.trackerlibrary.bean.BaseProtocolBean;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

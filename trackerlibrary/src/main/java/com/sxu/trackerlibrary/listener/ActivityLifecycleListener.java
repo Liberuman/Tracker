@@ -1,4 +1,4 @@
-package com.sxu.trackerlibrary;
+package com.sxu.trackerlibrary.listener;
 
 import android.app.Activity;
 import android.app.Application;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
+
+import com.sxu.trackerlibrary.Tracker;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -45,7 +47,7 @@ public class ActivityLifecycleListener implements Application.ActivityLifecycleC
 		resumeTimeMap.put(activity, System.currentTimeMillis());
 		Log.i("out", "*********onActivityResumed");
 		if (!eventTrackerMap.get(activity)) {
-			ViewClickedEventTracker.getInstance().setActivityTracker(activity);
+			ViewClickedEventListener.getInstance().setActivityTracker(activity);
 			eventTrackerMap.put(activity, true);
 		}
 	}
@@ -71,7 +73,7 @@ public class ActivityLifecycleListener implements Application.ActivityLifecycleC
 	public void onActivityDestroyed(Activity activity) {
 		long duration = durationMap.get(activity);
 		if (duration > 0) {
-			EventManager.getInstance().addViewEvent(activity, null, duration);
+			Tracker.getInstance().addViewEvent(activity, null, duration);
 		}
 		resumeTimeMap.remove(activity);
 		durationMap.remove(activity);

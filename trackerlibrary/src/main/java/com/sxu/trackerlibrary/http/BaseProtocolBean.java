@@ -1,6 +1,4 @@
-package com.sxu.trackerlibrary.bean;
-
-import java.io.Serializable;
+package com.sxu.trackerlibrary.http;
 
 /*******************************************************************************
  * Description: 网络应答数据协议

@@ -1,4 +1,4 @@
-package com.sxu.trackerlibrary;
+package com.sxu.trackerlibrary.http;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;

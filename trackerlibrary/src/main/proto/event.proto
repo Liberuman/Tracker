@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package tutorial;
+
+option java_package = "com.sxu.trackerlibrary.message";
+option java_outer_classname = "EventInfo";
+
+message EventList {
+    repeated Event events = 1;
+}
+
+message Event {
+    optional int64 duration = 1 [default = 0];
+    required int32 type = 2;
+    required int64 eventTime = 3;
+    required string path = 4;
+}

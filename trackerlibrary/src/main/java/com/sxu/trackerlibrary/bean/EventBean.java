@@ -18,13 +18,13 @@ import java.io.Serializable;
  *
  * Copyright: all rights reserved by Freeman.
  *******************************************************************************/
-public class Event implements Serializable {
+public class Event extends BaseBean {
 
 	/**
 	 * 事件类型
 	 */
+	public final static int EVENT_TYPE_VIEW = 0;      // 页面预览事件
 	public final static int EVENT_TYPE_CLICKED = 1;   // 点击事件
-	public final static int EVENT_TYPE_VIEW = 2;      // 页面停留时长
 
 	private final int MILL_OF_SECOND = 1000;
 
@@ -35,7 +35,7 @@ public class Event implements Serializable {
 	/**
 	 * 事件发生时间
 	 */
-	private long createTime;
+	private long eventTime;
 	/**
 	 * 页面停留时长
 	 */
@@ -48,23 +48,38 @@ public class Event implements Serializable {
 
 	public Event(String path, long duration) {
 		this.type = EVENT_TYPE_VIEW;
-		this.createTime = System.currentTimeMillis() / MILL_OF_SECOND;
+		this.eventTime = System.currentTimeMillis() / MILL_OF_SECOND;
 		this.path = path;
 		this.duration = duration / MILL_OF_SECOND;
 	}
 
+	public Event(String path, long duration, long createTime) {
+		this.type = EVENT_TYPE_VIEW;
+		this.path = path;
+		this.duration = duration / MILL_OF_SECOND;
+		this.eventTime = createTime;
+	}
+
 	public Event(String path) {
 		this.type = EVENT_TYPE_CLICKED;
-		this.createTime = System.currentTimeMillis() / MILL_OF_SECOND;
+		this.eventTime = System.currentTimeMillis() / MILL_OF_SECOND;
+		this.duration = 0;
 		this.path = path;
+	}
+
+	public Event(long createTime, String path) {
+		this.type = EVENT_TYPE_CLICKED;
+		this.path = path;
+		this.duration = 0;
+		this.eventTime = createTime;
 	}
 
 	public int getType() {
 		return type;
 	}
 
-	public long getCreateTime() {
-		return createTime;
+	public long getEventTime() {
+		return eventTime;
 	}
 
 	public long getDuration() {
@@ -79,7 +94,7 @@ public class Event implements Serializable {
 	public String toString() {
 		return "Event{" +
 				"type=" + type +
-				", createTime=" + createTime +
+				", createTime=" + eventTime +
 				", duration=" + duration +
 				", path='" + path + '\'' +
 				'}';

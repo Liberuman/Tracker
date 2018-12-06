@@ -17,7 +17,7 @@ import java.io.Serializable;
  *
  * Copyright: all rights reserved by Freeman.
  *******************************************************************************/
-public class BaseBean implements Serializable {
+public class CommonBean implements Serializable {
 
 	/**
 	 * 包名
@@ -48,7 +48,7 @@ public class BaseBean implements Serializable {
 	 */
 	private String OSVersion;
 
-	private BaseBean(Context context) {
+	private CommonBean(Context context) {
 		initData(context);
 	}
 

@@ -121,7 +121,6 @@ public class ViewClickedEventTracker extends View.AccessibilityDelegate {
 		super.sendAccessibilityEvent(host, eventType);
 		if (AccessibilityEvent.TYPE_VIEW_CLICKED == eventType && host != null) {
 			EventManager.getInstance().addClickEvent(host, (Fragment) host.getTag(FRAGMENT_TAG_KEY));
-			Log.i("out", "点击了");
 		}
 	}
 

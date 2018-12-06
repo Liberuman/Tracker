@@ -9,6 +9,9 @@ import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.View;
 
+import com.sxu.trackerlibrary.util.LogUtil;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -44,10 +47,7 @@ public class FragmentLifecycleListener extends FragmentManager.FragmentLifecycle
 		if (!f.isHidden() && f.getUserVisibleHint()) {
 			onVisibleChanged(f, true);
 		}
-		if (!eventTrackerMap.get(f)) {
-			ViewClickedEventTracker.getInstance().setFragmentTracker(f);
-			eventTrackerMap.put(f, true);
-		}
+
 		Log.i("out", "***************onFragmentResumed " + f.getClass().getSimpleName() + " " + f.getActivity().getClass().getSimpleName());
 	}
 
@@ -57,7 +57,9 @@ public class FragmentLifecycleListener extends FragmentManager.FragmentLifecycle
 		if (!f.isHidden() && f.getUserVisibleHint()) {
 			onVisibleChanged(f, false);
 		}
-		Log.i("out", "***************onFragmentPaused " + f.getClass().getSimpleName() + " " + f.getActivity().getClass().getSimpleName());
+		// 解决viewpager中fragment切换时事件统计失效的问题
+		eventTrackerMap.put(f, false);
+		Log.i("out", "XXXXXXXXXXX onFragmentPaused " + f.getClass().getSimpleName() + " " + f.getActivity().getClass().getSimpleName());
 	}
 
 	@Override
@@ -78,6 +80,10 @@ public class FragmentLifecycleListener extends FragmentManager.FragmentLifecycle
 		Log.i("out", "***************onVisibleChanged " + f.getClass().getSimpleName() + " " + f.getActivity().getClass().getSimpleName() + " visible=" + visible);
 		if (visible) {
 			resumeTimeMap.put(f, System.currentTimeMillis());
+			if (!eventTrackerMap.get(f)) {
+				ViewClickedEventTracker.getInstance().setFragmentTracker(f);
+				eventTrackerMap.put(f, true);
+			}
 		} else {
 			durationMap.put(f, durationMap.get(f) + System.currentTimeMillis() - resumeTimeMap.get(f));
 		}

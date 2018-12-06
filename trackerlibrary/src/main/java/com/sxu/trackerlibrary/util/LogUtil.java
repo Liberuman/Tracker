@@ -14,7 +14,7 @@ import android.util.Log;
 public class LogUtil {
 
 	private final static String tag = "Tracker: ";
-	private static boolean isOpened = true;
+	private static boolean isOpened = false;
 
 	public static void openLog(boolean open) {
 		isOpened = open;

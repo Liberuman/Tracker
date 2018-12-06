@@ -1,11 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.sxu.trackerlibrary">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application>
-        <!--<service android:name=".ExitService"-->
-            <!--android:stopWithTask="false">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="com.sxu.trackerlibrary.ExitService" />-->
-            <!--</intent-filter>-->
-        <!--</service>-->
+        <service android:name=".UploadEventService"/>
     </application>
+
 </manifest>

@@ -42,7 +42,6 @@ public class ActivityLifecycleListener implements Application.ActivityLifecycleC
 
 	@Override
 	public void onActivityResumed(Activity activity) {
-		EventManager.getInstance().setPageInfo(activity, null);
 		resumeTimeMap.put(activity, System.currentTimeMillis());
 		Log.i("out", "*********onActivityResumed");
 		if (!eventTrackerMap.get(activity)) {

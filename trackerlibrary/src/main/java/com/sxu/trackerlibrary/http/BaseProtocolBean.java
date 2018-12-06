@@ -1,18 +1,19 @@
 package com.sxu.trackerlibrary.bean;
 
+import java.io.Serializable;
+
 /*******************************************************************************
- * Description: 点击事件
+ * Description: 网络应答数据协议
  *
  * Author: Freeman
  *
- * Date: 2018/11/26
+ * Date: 2018/12/6
  *
  * Copyright: all rights reserved by Freeman.
  *******************************************************************************/
-public class ClickEvent {
+public class BaseProtocolBean<T> extends BaseBean {
 
-	/**
-	 * 点击事件key
-	 */
-	public String eventName;
+	public int code;
+	public String msg;
+	public T data;
 }

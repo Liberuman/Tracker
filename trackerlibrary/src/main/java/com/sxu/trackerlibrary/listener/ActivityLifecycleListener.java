@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 import com.sxu.trackerlibrary.Tracker;
+import com.sxu.trackerlibrary.util.LogUtil;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -31,7 +32,6 @@ public class ActivityLifecycleListener implements Application.ActivityLifecycleC
 
 	@Override
 	public void onActivityCreated(Activity activity, Bundle bundle) {
-		Log.i("out", "*********onActivityCreated");
 		durationMap.put(activity, 0L);
 		eventTrackerMap.put(activity, false);
 		registerFragmentLifecycleListener(activity);
@@ -39,29 +39,29 @@ public class ActivityLifecycleListener implements Application.ActivityLifecycleC
 
 	@Override
 	public void onActivityStarted(Activity activity) {
-		Log.i("out", "*********onActivityStarted");
+
 	}
 
 	@Override
 	public void onActivityResumed(Activity activity) {
 		resumeTimeMap.put(activity, System.currentTimeMillis());
-		Log.i("out", "*********onActivityResumed");
 		if (!eventTrackerMap.get(activity)) {
 			ViewClickedEventListener.getInstance().setActivityTracker(activity);
 			eventTrackerMap.put(activity, true);
 		}
+		LogUtil.i(activity.getClass().getSimpleName() + " onActivityResumed");
 	}
 
 	@Override
 	public void onActivityPaused(Activity activity) {
 		durationMap.put(activity, durationMap.get(activity)
 				+ (System.currentTimeMillis() - resumeTimeMap.get(activity)));
-		Log.i("out", "*********onActivityPaused");
+		LogUtil.i(activity.getClass().getSimpleName() + " onActivityPaused");
 	}
 
 	@Override
 	public void onActivityStopped(Activity activity) {
-		Log.i("out", "*********onActivityStopped");
+
 	}
 
 	@Override
@@ -78,9 +78,8 @@ public class ActivityLifecycleListener implements Application.ActivityLifecycleC
 		resumeTimeMap.remove(activity);
 		durationMap.remove(activity);
 		eventTrackerMap.remove(activity);
-		// todo 释放之后Fragment onStop之后的生命周期不再执行
+		// 注销之后Fragment onStop之后的生命周期将不再执行
 		// unregisterFragmentLifecycleListener(activity);
-		Log.i("out", "*********onActivityDestroyed");
 	}
 
 	private void registerFragmentLifecycleListener(final Activity context) {

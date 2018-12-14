@@ -1,26 +1,38 @@
 package com.sxu.trackerlibrary;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.View;
 
 import com.google.gson.reflect.TypeToken;
+import com.sxu.trackerlibrary.bean.CommonBean;
 import com.sxu.trackerlibrary.http.BaseBean;
 import com.sxu.trackerlibrary.http.BaseProtocolBean;
 import com.sxu.trackerlibrary.bean.ConfigBean;
-import com.sxu.trackerlibrary.http.Constants;
 import com.sxu.trackerlibrary.bean.EventBean;
 import com.sxu.trackerlibrary.db.DatabaseManager;
+import com.sxu.trackerlibrary.http.DATA_PROTOCOL;
+import com.sxu.trackerlibrary.http.UPLOAD_CATEGORY;
 import com.sxu.trackerlibrary.http.UploadEventService;
 import com.sxu.trackerlibrary.listener.ActivityLifecycleListener;
 import com.sxu.trackerlibrary.message.EventInfo;
 import com.sxu.trackerlibrary.http.HttpManager;
+import com.sxu.trackerlibrary.util.AppUtil;
+import com.sxu.trackerlibrary.util.LogUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /*******************************************************************************
  * Description: 事件管理
@@ -33,6 +45,7 @@ import java.util.List;
  *******************************************************************************/
 public class Tracker {
 
+	private boolean isInit = false;
 	private boolean requestConfig = false;
 	private long lastItemEventTime = 0;
 	/**
@@ -46,11 +59,13 @@ public class Tracker {
 
 	private Context context;
 	private TrackerConfiguration config;
-	private static Tracker instance;
+	private SharedPreferences preferences;
 
 	private final int UPLOAD_EVENT_WHAT = 0xff01;
 	private final int MAX_EVENT_COUNT = 50;
 	private final int DEFAULT_CLEAR_COUNT = 30;
+	// 是否是新设备
+	private final String KEY_IS_NEW_DEVICE = "key_is_new_device";
 
 	private Handler handler = new Handler() {
 		@Override
@@ -58,7 +73,7 @@ public class Tracker {
 			super.handleMessage(msg);
 			if (msg.what == UPLOAD_EVENT_WHAT) {
 				uploadEventInfo();
-				if (config.getUploadCategory() != Constants.UPLOAD_CATEGORY.NEXT_LAUNCH) {
+				if (config.getUploadCategory() != UPLOAD_CATEGORY.NEXT_LAUNCH) {
 					handler.sendEmptyMessageDelayed(UPLOAD_EVENT_WHAT, config.getUploadCategory().getValue() * 1000);
 				}
 			}
@@ -70,15 +85,7 @@ public class Tracker {
 	}
 
 	public static Tracker getInstance() {
-		if (instance == null) {
-			synchronized (Tracker.class) {
-				if (instance == null) {
-					instance = new Tracker();
-				}
-			}
-		}
-
-		return instance;
+		return Singleton.instance;
 	}
 
 	public void init(Application context, TrackerConfiguration config) {
@@ -86,10 +93,15 @@ public class Tracker {
 			throw new IllegalArgumentException("config can't be null");
 		}
 
+		isInit = true;
 		this.context = context;
 		setTrackerConfig(config);
+		preferences = context.getSharedPreferences(context.getPackageName(), MODE_PRIVATE);
+		if (preferences.getBoolean(KEY_IS_NEW_DEVICE, true) && !TextUtils.isEmpty(config.getNewDeviceUrl())) {
+			submitDeviceInfo();
+		}
 		context.registerActivityLifecycleCallbacks(new ActivityLifecycleListener());
-		if (config.getUploadCategory() == Constants.UPLOAD_CATEGORY.REAL_TIME) {
+		if (config.getUploadCategory() == UPLOAD_CATEGORY.REAL_TIME) {
 			UploadEventService.enter(context, config.getHostName(), config.getHostPort(), null);
 		} else {
 			if (!requestConfig) {
@@ -118,12 +130,14 @@ public class Tracker {
 					validEventPathList = getValidEventList(result.validEventList);
 				}
 				handler.sendEmptyMessage(UPLOAD_EVENT_WHAT);
+				LogUtil.i("get config success");
 			}
 
 			@Override
 			public void onError(int code, String errMsg) {
 				requestConfig = true;
 				validEventPathList = getValidEventList(null);
+				LogUtil.i("get config failed " + errMsg);
 			}
 		});
 	}
@@ -164,7 +178,12 @@ public class Tracker {
 	}
 
 	private void addEvent(final EventBean eventInfo) {
-		if (config.getUploadCategory() == Constants.UPLOAD_CATEGORY.REAL_TIME) {
+		if (!isInit) {
+			throw new IllegalArgumentException("Not init Tracker!!!");
+		}
+
+		LogUtil.i(eventInfo.toString());
+		if (config.getUploadCategory() == UPLOAD_CATEGORY.REAL_TIME) {
 			commitRealTimeEvent(eventInfo);
 		} else {
 			if (validEventPathList != null && validEventPathList.size() > 0
@@ -218,10 +237,14 @@ public class Tracker {
 	}
 
 	private byte[] getByteData(List<EventBean> eventList) {
-		return config.getDataProtocol() == Constants.DATA_PROTOCOL.JSON ? convertDataToJson(eventList)
+		return config.getDataProtocol() == DATA_PROTOCOL.JSON ? convertDataToJson(eventList)
 				: convertDataToProtocolBuffer(eventList);
 	}
 
+	/**
+	 * 上传埋点数据
+	 * @param data
+	 */
 	private void realUploadEventInfo(byte[] data) {
 		if (data == null || data.length == 0) {
 			return;
@@ -235,12 +258,43 @@ public class Tracker {
 						DatabaseManager.getInstance(context).removeData(lastItemEventTime);
 						lastItemEventTime = 0;
 					}
+					LogUtil.i("event info upload success");
 				}
 
 				@Override
 				public void onError(int code, String errMsg) {
-
+					LogUtil.i("event info upload failed " + errMsg);
 				}
 			});
+	}
+
+	/**
+	 * 提交新设备信息到服务器
+	 */
+	private void submitDeviceInfo() {
+		String deviceInfo = config.getDeviceInfo();
+		if (TextUtils.isEmpty(deviceInfo)) {
+			CommonBean commonInfo = new CommonBean(context);
+			deviceInfo = commonInfo.getParameters(config.getNewDeviceUrl().contains("?") ? "&" : "?");
+		}
+		HttpManager.getInstance(context).postQuery(config.getNewDeviceUrl(), deviceInfo,
+				BaseProtocolBean.class, new HttpManager.OnRequestListener() {
+			@Override
+			public void onSuccess(Object result) {
+				SharedPreferences.Editor editor = preferences.edit();
+				editor.putBoolean(KEY_IS_NEW_DEVICE, false);
+				editor.apply();
+				LogUtil.i("deviceInfo submit success");
+			}
+
+			@Override
+			public void onError(int code, String errMsg) {
+				LogUtil.i("deviceInfo submit failed " + errMsg);
+			}
+		});
+	}
+
+	public static class Singleton {
+		private final static Tracker instance = new Tracker();
 	}
 }

@@ -113,7 +113,9 @@ public class DatabaseManager {
 			values.put("duration", eventInfo.getDuration());
 			values.put("event_time", eventInfo.getEventTime());
 			long result = database.insert(DEFAULT_TABLE_NAME, null, values);
-			LogUtil.i("result======" + result);
+			if (result > 0) {
+				LogUtil.i("数据插入成功");
+			}
 		}
 
 		@Override

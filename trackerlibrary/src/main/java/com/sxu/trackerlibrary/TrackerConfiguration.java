@@ -1,6 +1,9 @@
 package com.sxu.trackerlibrary;
 
-import com.sxu.trackerlibrary.http.Constants;
+import android.text.TextUtils;
+
+import com.sxu.trackerlibrary.http.DATA_PROTOCOL;
+import com.sxu.trackerlibrary.http.UPLOAD_CATEGORY;
 import com.sxu.trackerlibrary.util.LogUtil;
 
 import java.net.URL;
@@ -16,27 +19,48 @@ import java.net.URL;
  *******************************************************************************/
 public class TrackerConfiguration {
 
-	private boolean isDebug;
 	private boolean openLog;
+	/**
+	 * 实时上传埋点数据需要的IP和端口
+	 */
 	private int hostPort;
+	private String hostName;
+	/**
+	 * 上传策略，详见{@link UPLOAD_CATEGORY}
+	 */
 	private int uploadCategory;
+	/**
+	 * 数据传输协议，详见{@link DATA_PROTOCOL}
+	 */
 	private int dataProtocol;
+	/**
+	 * 获取配置信息的URL
+	 */
 	private String configUrl;
+	/**
+	 * 上传统计数据的URL
+	 */
 	private String uploadUrl;
-	private Constants.UPLOAD_CATEGORY _uploadCategory;
-	private Constants.DATA_PROTOCOL _dataProtocol;
+	/**
+	 * 上传新设备信息的URL
+	 */
+	private String newDeviceUrl;
+	/**
+	 * 上传日志信息的公共参数, URL参数的形式
+	 */
+	private String commonParameter;
+	/**
+	 * 保存新设备的信息，将需要上传的设备信息以URL参数的形式拼接，如"deviceId=12345&os_version=7.0"
+	 */
+	private String deviceInfo;
+
+	private UPLOAD_CATEGORY _uploadCategory;
+	private DATA_PROTOCOL _dataProtocol;
 
 	public TrackerConfiguration() {
-		isDebug = false;
 		openLog = false;
-		_uploadCategory = Constants.UPLOAD_CATEGORY.NEXT_LAUNCH;
-		_dataProtocol = Constants.DATA_PROTOCOL.PROTOCOL_BUFFER;
-		LogUtil.openLog(openLog);
-	}
-
-	public TrackerConfiguration isDebug(boolean isDebug) {
-		this.isDebug = isDebug;
-		return this;
+		_uploadCategory = UPLOAD_CATEGORY.NEXT_LAUNCH;
+		_dataProtocol = DATA_PROTOCOL.PROTOCOL_BUFFER;
 	}
 
 	public TrackerConfiguration openLog(boolean openLog) {
@@ -54,18 +78,25 @@ public class TrackerConfiguration {
 		return this;
 	}
 
+	public String getNewDeviceUrl() {
+		return newDeviceUrl;
+	}
+
+	public TrackerConfiguration setNewDeviceUrl(String newDeviceUrl) {
+		this.newDeviceUrl = newDeviceUrl;
+		return this;
+	}
+
 	public String getUploadUrl() {
 		return uploadUrl;
 	}
 
-	public String getHostName() {
-		String hostName = null;
-		try {
-			hostName = new URL(uploadUrl).getHost();
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
+	public TrackerConfiguration setHostName(String hostName) {
+		this.hostName = hostName;
+		return this;
+	}
 
+	public String getHostName() {
 		return hostName;
 	}
 
@@ -84,29 +115,46 @@ public class TrackerConfiguration {
 
 	public TrackerConfiguration setUploadCategory(int uploadCategory) {
 		this.uploadCategory = uploadCategory;
-		this._uploadCategory = Constants.UPLOAD_CATEGORY.getCategory(uploadCategory);
+		this._uploadCategory = UPLOAD_CATEGORY.getCategory(uploadCategory);
 		return this;
 	}
 
 	public TrackerConfiguration setDataProtocol(int dataProtocol) {
 		this.dataProtocol = dataProtocol;
-		this._dataProtocol = Constants.DATA_PROTOCOL.getDataProtocol(dataProtocol);
+		this._dataProtocol = DATA_PROTOCOL.getDataProtocol(dataProtocol);
 		return this;
-	}
-
-	public boolean isDebug() {
-		return isDebug;
 	}
 
 	public boolean isOpenLog() {
 		return openLog;
 	}
 
-	public Constants.UPLOAD_CATEGORY getUploadCategory() {
+	public String getCommonParameter() {
+		return commonParameter;
+	}
+
+	public TrackerConfiguration setCommonParameter(String commonParameter) {
+		this.commonParameter = commonParameter;
+		if (!TextUtils.isEmpty(uploadUrl)) {
+			uploadUrl += commonParameter;
+		}
+		return this;
+	}
+
+	public String getDeviceInfo() {
+		return deviceInfo;
+	}
+
+	public TrackerConfiguration setDeviceInfo(String deviceInfo) {
+		this.deviceInfo = deviceInfo;
+		return this;
+	}
+
+	public UPLOAD_CATEGORY getUploadCategory() {
 		return _uploadCategory;
 	}
 
-	public Constants.DATA_PROTOCOL getDataProtocol() {
+	public DATA_PROTOCOL getDataProtocol() {
 		return _dataProtocol;
 	}
 }

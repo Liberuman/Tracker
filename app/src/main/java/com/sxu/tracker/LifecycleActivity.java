@@ -38,7 +38,7 @@ public class LifecycleActivity extends AppCompatActivity {
 					public void run() {
 						final FragmentTransaction transaction = fm.beginTransaction();
 						transaction.hide(fragment);
-						transaction.commit();
+						transaction.commitAllowingStateLoss();
 					}
 				}, 2000);
 
@@ -47,7 +47,7 @@ public class LifecycleActivity extends AppCompatActivity {
 					public void run() {
 						final FragmentTransaction transaction = fm.beginTransaction();
 						transaction.show(fragment);
-						transaction.commit();
+						transaction.commitAllowingStateLoss();
 					}
 				}, 4000);
 			} else {

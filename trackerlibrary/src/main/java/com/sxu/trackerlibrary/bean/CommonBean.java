@@ -48,27 +48,57 @@ public class CommonBean implements Serializable {
 	 */
 	private String OSVersion;
 
-	private CommonBean(Context context) {
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public String getPosition() {
+		return position;
+	}
+
+	public String getDeviceId() {
+		return deviceId;
+	}
+
+	public String getPhoneBrand() {
+		return phoneBrand;
+	}
+
+	public String getOSVersion() {
+		return OSVersion;
+	}
+
+	public CommonBean(Context context) {
 		initData(context);
 	}
 
 	private void initData(Context context) {
 		packageName = AppUtil.getPackageName(context);
-		channel = "";
+		channel = AppUtil.getChannel(context);
 		version = AppUtil.getAppVersionName(context);
+		deviceId = AppUtil.getDeviceId(context);
 		phoneBrand = AppUtil.getPhoneBrand(context);
 		OSVersion = AppUtil.getOSVersion();
 	}
 
-	public String getParamters() {
+	public String getParameters(String sign) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("packageName=").append(packageName)
-				.append("&channel=").append(channel)
-				.append("&version=").append(version)
-				.append("&position=").append(position)
-				.append("&deviceId=").append(deviceId)
-				.append("&phoneBrand=").append(phoneBrand)
-				.append("&OSVersion=").append(OSVersion);
+		builder.append(sign)
+			.append("packageName=").append(packageName)
+			.append("&channel=").append(channel)
+			.append("&version=").append(version)
+			.append("&position=").append(position)
+			.append("&deviceId=").append(deviceId)
+			.append("&phoneBrand=").append(phoneBrand)
+			.append("&OSVersion=").append(OSVersion);
 		return builder.toString();
 	}
 }

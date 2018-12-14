@@ -56,34 +56,6 @@ public class ViewClickedEventListener extends View.AccessibilityDelegate {
 		}
 	}
 
-	public void setViewPagerTracker(View contentView) {
-		if (contentView == null || !(contentView instanceof ViewGroup)) {
-			return;
-		}
-
-		for (int i = 0, size = ((ViewGroup) contentView).getChildCount(); i < size; i++) {
-			View childView = ((ViewGroup) contentView).getChildAt(i);
-			if (!(childView instanceof ViewPager)) {
-				if (childView instanceof ViewGroup) {
-					setViewPagerTracker(childView);
-				}
-				continue;
-			}
-
-			PagerAdapter adapter = ((ViewPager) childView).getAdapter();
-			if (adapter != null && (adapter instanceof FragmentPagerAdapter
-					|| adapter instanceof FragmentStatePagerAdapter)) {
-				for (int j = 0, count = adapter.getCount(); j < count; j++) {
-					Fragment fragment = (Fragment) adapter.instantiateItem((ViewPager)childView, j);
-					View fragmentView = fragment.getView();
-					if (fragmentView != null) {
-						setViewClickedTracker(fragment.getView(), null);
-					}
-				}
-			}
-		}
-	}
-
 	private void setViewClickedTracker(View view, Fragment fragment) {
 		if (view == null) {
 			return;
@@ -93,7 +65,7 @@ public class ViewClickedEventListener extends View.AccessibilityDelegate {
 			if (fragment != null) {
 				view.setTag(FRAGMENT_TAG_KEY, fragment);
 			}
-			view.setAccessibilityDelegate(ViewClickedEventListener.this);
+			view.setAccessibilityDelegate(this);
 		}
 		if (view instanceof ViewGroup) {
 			int childCount = ((ViewGroup) view).getChildCount();

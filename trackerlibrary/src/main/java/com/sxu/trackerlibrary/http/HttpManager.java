@@ -2,6 +2,11 @@ package com.sxu.trackerlibrary.http;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.TextUtils;
+
+import com.sxu.trackerlibrary.Tracker;
+import com.sxu.trackerlibrary.bean.CommonBean;
+import com.sxu.trackerlibrary.util.LogUtil;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -32,7 +37,6 @@ public class HttpManager<T extends BaseProtocolBean> {
 	private Context context;
 	private Handler handler;
 	private static HttpManager instance;
-
 	private int DEFAULT_ERROR_CODE = 0xff00;
 
 	private HttpManager(Context applicationContext) {
@@ -86,6 +90,19 @@ public class HttpManager<T extends BaseProtocolBean> {
 		query(urlStr, "POST", data, tClass, listener);
 	}
 
+	public void postQuery(String urlStr, String parameter,
+	                      Class<T> tClass, OnRequestListener<T> listener) {
+		byte[] data = null;
+		if (!TextUtils.isEmpty(parameter)) {
+			try {
+				data = parameter.getBytes("UTF-8");
+			} catch (Exception e) {
+				e.printStackTrace(System.err);
+			}
+		}
+		query(urlStr, "POST", data, tClass, listener);
+	}
+
 	public void postQuery(String urlStr, byte[] data,
 	                      Class<T> tClass, OnRequestListener<T> listener) {
 		query(urlStr, "POST", data, tClass, listener);
@@ -103,6 +120,10 @@ public class HttpManager<T extends BaseProtocolBean> {
 	
 	private void realQuery(String urlStr, String method, byte[] data, final Class<T> classT,
 	                   final OnRequestListener listener) {
+		if (TextUtils.isEmpty(urlStr)) {
+			throw new IllegalArgumentException("urlStr can't be empty");
+		}
+		LogUtil.i("url== " + urlStr);
 		boolean completed = false;
 		HttpURLConnection connection = null;
 		final StringBuilder builder = new StringBuilder();
@@ -161,10 +182,14 @@ public class HttpManager<T extends BaseProtocolBean> {
 					@Override
 					public void run() {
 						T result = BaseBean.fromJson(builder.toString(), classT);
-						if (result.code == 1) {
-							listener.onSuccess(result.data);
+						if (result != null) {
+							if (result.code == 1) {
+								listener.onSuccess(result.data);
+							} else {
+								listener.onError(result.code, result.msg);
+							}
 						} else {
-							listener.onError(result.code, result.msg);
+							listener.onError(DEFAULT_ERROR_CODE, "数据返回异常");
 						}
 					}
 				});
